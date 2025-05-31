@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Admin A.K.A (Not for Randon) Panel</title>
+    </head>
+    <body>
+        <h1>Add User</h1>
+        <form action="/api/agent" method="post">
+            <p>AGENT PIN</p><input type="text" id="pin" name="agentpin">
+            <p>AGENT NAME</p><input type="text" id="name" name="name">
+            <p>TARGET NAME</p><input type="text" id="target" name="target">
+            <p>TARGET IMG</p><input type="text" id="img" name="img">
+            <input type="submit" value="submit">
+        </form>
+
+        <h1>Change Target</h1>
+        <form action="/api/agent/target" method="post">
+            <p>AGENT NAME</p><input type="text" id="agentname" name="name">
+            <p>NEW TARGET</p><input type="text" id="newtarget" name="target">
+            <input type="submit" value="submit">
+        </form>
+    </body>
+</html>

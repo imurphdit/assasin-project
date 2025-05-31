@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Agent Page</title>
+    </head>
+    <body class="bg-[#77DD66]">
+        <div class="bg-slate-100 pt-20 pb-20 flex flex-col text-center m-20 rounded-[100px] h-auto">
+            <h1 class="text-9xl font-bold">Agent<br>#<%= pin %></h1>
+        </div>
+        <div class="bg-slate-100 pt-20 pb-20 flex flex-col text-center m-20 rounded-[100px] h-auto">
+            <p class="text-9xl font-bold">Target</p>
+            <img class="self-center rounded-full h-75 w-75 mt-25 mb-5" src="<%= img %>">
+            <p class="text-9xl font-bold mb-25"><%= target %></p>
+            <form action="/api/agent/kill/<%= target %>" method="post">
+                <input class="bg-red-500 h-32 w-96 text-white font-bold text-5xl rounded-full" type="submit" value="Kill">
+            </form>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</html>
