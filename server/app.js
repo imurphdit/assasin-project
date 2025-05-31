@@ -5,8 +5,9 @@ const bp = require("body-parser");
 app.set('view engine','ejs');
 
 const sequelize = require("./sequelizeConfig")
+const { Op } = require('sequelize');
 const Agent = require("./agent.model")
-sequelize.sync({ force: true });
+sequelize.sync();
 
 
 app.use(bp.urlencoded({ extended: false }));
@@ -46,7 +47,7 @@ app.get('/agent/:id', async (req, res) => {
 
   const agent = await Agent.findByPk(agentId)
   if (agent){
-    res.render('agentPage', { img: agent.img, target: agent.target, pin: agent.agentpin });
+    res.render('agentPage', { img: agent.img, target: agent.target, pin: agent.agentpin, name: agent.name });
   } else {
     res.sendStatus(404);
   }
@@ -68,19 +69,32 @@ app.post('/api/agent/', async (req, res) => {
 
 
 // Kill a player
-app.post('/api/agent/kill/:name', async (req, res) => {
-  const agent = await Agent.findOne({ where: { target: req.params.name } })
-  const agentKilled = await Agent.findOne( { where: { name: req.params.name }})
-  
+app.post('/api/:agent/kill/:target', async (req, res) => {
+  const agent = await Agent.findOne({ where: { name: req.params.agent } })
+  const agentKilled = await Agent.findOne( { where: { name: req.params.target }})
+  const newTarget = await Agent.findAll({
+    where: {
+      isdead: false,
+      [Op.not]: [
+        { name: [req.params.agent, req.params.target]}
+      ]
+    },
+    order: sequelize.random(),
+    limit: 1
+  })
+  console.log(newTarget)
+
   agentKilled.isdead = true;
   agentKilled.killedby = agent.name;
   await agentKilled.save();
 
-
-  agent.target = agentKilled.target;
-  await agent.save();
-
-  res.send("Killed " + req.params.name)
+  if(newTarget.length === 0){
+    res.send("You won!")
+  } else{
+    agent.target = newTarget[0].name;
+    await agent.save();
+    res.send("Killed " + req.params.target)
+  }
 });
 
 
