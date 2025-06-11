@@ -22,7 +22,7 @@ app.get('/login', (req, res) => {
 })
 
 
-// Login redirect
+// REDIRECT TO AGENT PAGE VIA PIN
 app.post('/login', async (req, res) => {
 
   const pin = req.body;
@@ -31,44 +31,45 @@ app.post('/login', async (req, res) => {
   const agent = await Agent.findOne({ where: pin});
   
   if (agent) {
-    const pin = agent.id.toString();
-    res.redirect('/agent/' + Buffer.from(pin).toString('base64'));
+    res.redirect('/agent/' + agent.id.toString());
   } else {
     res.sendStatus(404);
   }
 });
 
 
-// Player login via base64ID
+//LOAD AGENT PAGE VIA UUID
 app.get('/agent/:id', async (req, res) => {
-
-  //Convert ID from base64 to agent ID in database
-  const agentId = Buffer.from(req.params.id, 'base64').toString('ascii')
-
-  const agent = await Agent.findByPk(agentId)
-  if (agent){
-    res.render('agentPage', { img: agent.img, target: agent.target, pin: agent.agentpin, name: agent.name });
+  const agent = await Agent.findByPk(req.params.id)
+  
+  //IF AGENT ALIVE, LOAD
+  if (agent && agent.isdead === false){
+    if (agent.won === true){
+      res.render('win')
+    } else {
+      res.render('agentPage', { img: agent.img, target: agent.target, pin: agent.agentpin, name: agent.name });
+    }
   } else {
     res.sendStatus(404);
   }
 });
 
 
-// Get all players
+//GET AGENTS LIST
 app.get('/api/agent/', async (req, res) => {
   const agents = await Agent.findAll();
   res.json(agents); 
 });
 
 
-// Create a player 
+//CREATE AGENT 
 app.post('/api/agent/', async (req, res) => {
   const agent = await Agent.create(req.body);
   res.json(agent);
 });
 
 
-// Kill a player
+//KILL AGENT
 app.post('/api/:agent/kill/:target', async (req, res) => {
   const agent = await Agent.findOne({ where: { name: req.params.agent } })
   const agentKilled = await Agent.findOne( { where: { name: req.params.target }})
@@ -82,37 +83,38 @@ app.post('/api/:agent/kill/:target', async (req, res) => {
     order: sequelize.random(),
     limit: 1
   })
-  console.log(newTarget)
 
   agentKilled.isdead = true;
   agentKilled.killedby = agent.name;
   await agentKilled.save();
 
   if(newTarget.length === 0){
-    res.send("You won!")
+    agent.won = true;
+    await agent.save();
+    res.render('win');
   } else{
     agent.target = newTarget[0].name;
     await agent.save();
-    res.send("Killed " + req.params.target)
+    res.redirect(`/agent/${agent.id.toString()}`)
   }
 });
 
 
-// Update player target
-app.post('/api/agent/target', async (req, res)  => {
-  console.log(req.body.target)
-  const agent = await Agent.update(
-    { target: req.body.target},
-    {
-      where: {
-        name: req.body.name,
-      }
-    }
-  )
+// // Update player target
+// app.post('/api/agent/target', async (req, res)  => {
+//   console.log(req.body.target)
+//   const agent = await Agent.update(
+//     { target: req.body.target},
+//     {
+//       where: {
+//         name: req.body.name,
+//       }
+//     }
+//   )
 
   
-  res.json(agent)
-});
+//   res.json(agent)
+// });
 
 
 app.listen(port, () => {

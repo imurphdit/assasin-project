@@ -4,11 +4,12 @@
         <meta charset="UTF-8">
         <title>Login</title>
     </head>
-    <body>
-        <h1>Please Login</h1>
-        <form action="/login" method="post">
-            <input type="text" id="pin" name="agentpin">
-            <input type="submit" value="submit">
+    <body class="text-center bg-black text-white flex-col">
+        <h1 class="text-9xl font-bold m-20">Enter Agent ID</h1>
+        <form class="flex flex-col items-center" action="/login" method="post">
+                <input class="border-10 w-96 h-32 m-20 p-5 text-5xl" type="text" id="pin" name="agentpin" placeholder="#0000">
+                <input class="text-5xl font-bold p-5 border-5 rounded-2xl" type="submit" value="enter">
         </form>
     </body>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </html>

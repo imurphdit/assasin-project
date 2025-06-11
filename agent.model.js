@@ -21,6 +21,10 @@ Agent.init({
   },
   img: DataTypes.STRING,
   killedby: DataTypes.STRING,
+  won: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  }
 }, { sequelize, modelName: "agent" })
 
 module.exports = Agent
