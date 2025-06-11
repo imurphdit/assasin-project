@@ -1,15 +1,15 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 const bp = require("body-parser");
-app.set('view engine','ejs');
 
 const sequelize = require("./sequelizeConfig")
 const { Op } = require('sequelize');
 const Agent = require("./agent.model")
 sequelize.sync();
 
-
+app.set('view engine','ejs');
 app.use(bp.urlencoded({ extended: false }));
 app.use(bp.json());
 
