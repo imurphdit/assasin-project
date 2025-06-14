@@ -3,6 +3,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 3000
 const bp = require("body-parser");
+const session = require('express-session');
 
 const sequelize = require("./sequelizeConfig")
 const { Op } = require('sequelize');
@@ -12,6 +13,24 @@ sequelize.sync();
 app.set('view engine','ejs');
 app.use(bp.urlencoded({ extended: false }));
 app.use(bp.json());
+
+app.use(
+  session({
+    secret: 'aUniqueKeyLol', // Replace with a unique key
+    resave: false,           // Avoid resaving unchanged sessions
+    saveUninitialized: false, // Only save sessions with initialized data
+    cookie: {},
+  })
+);
+
+function auth (req, res, next){
+  if(req.session.agent){
+    console.log(req.session.agent + ' passed authentication.')
+    next()
+  } else {
+    res.redirect('/login')
+  }
+}
 
 app.get('/admin', (req, res) => {
   res.render('adminPage');
@@ -24,13 +43,12 @@ app.get('/login', (req, res) => {
 
 // REDIRECT TO AGENT PAGE VIA PIN
 app.post('/login', async (req, res) => {
-
   const pin = req.body;
-  console.log(pin);
-
   const agent = await Agent.findOne({ where: pin});
   
   if (agent) {
+    req.session.agent = agent.name
+    req.session.agentID = agent.id
     res.redirect('/agent/' + agent.id.toString());
   } else {
     res.sendStatus(404);
@@ -39,7 +57,7 @@ app.post('/login', async (req, res) => {
 
 
 //LOAD AGENT PAGE VIA UUID
-app.get('/agent/:id', async (req, res) => {
+app.get('/agent/:id', auth, async (req, res) => {
   const agent = await Agent.findByPk(req.params.id)
   
   //IF AGENT ALIVE, LOAD
@@ -56,7 +74,7 @@ app.get('/agent/:id', async (req, res) => {
 
 
 //GET AGENTS LIST
-app.get('/api/agent/', async (req, res) => {
+app.get('/api/agent/', auth, async (req, res) => {
   const agents = await Agent.findAll();
   res.json(agents); 
 });
@@ -70,51 +88,44 @@ app.post('/api/agent/', async (req, res) => {
 
 
 //KILL AGENT
-app.post('/api/:agent/kill/:target', async (req, res) => {
-  const agent = await Agent.findOne({ where: { name: req.params.agent } })
+app.post('/api/kill/:target', auth, async (req, res) => {
+  const agent = await Agent.findByPk(req.session.agentID)
   const agentKilled = await Agent.findOne( { where: { name: req.params.target }})
   const newTarget = await Agent.findAll({
     where: {
       isdead: false,
       [Op.not]: [
-        { name: [req.params.agent, req.params.target]}
+        { name: [req.session.agent, req.params.target]}
       ]
     },
     order: sequelize.random(),
     limit: 1
   })
 
-  agentKilled.isdead = true;
-  agentKilled.killedby = agent.name;
-  await agentKilled.save();
+  //CHECK IF THIS IS THEIR TARGET
+  if(agent.target === agentKilled.name){
+    agentKilled.isdead = true;
+    agentKilled.killedby = agent.name;
+    await agentKilled.save();
+    console.log(req.session.agent + ' has eliminated ' + agentKilled.name)
+  } else {
+    console.log(req.session.agent + ' attempted an unauthorized kill...')
+    return res.send('This isnt your target...')
+  }
 
+  //CHECK IF THERE ARE ANY PLAYERS LEFT
   if(newTarget.length === 0){
     agent.won = true;
     await agent.save();
+    console.log(req.session.agent + ' has won the game. Now let us see if they are worthy..')
     res.render('win');
   } else{
+    console.log(req.session.agent + ' is given a new target.')
     agent.target = newTarget[0].name;
     await agent.save();
     res.redirect(`/agent/${agent.id.toString()}`)
   }
 });
-
-
-// // Update player target
-// app.post('/api/agent/target', async (req, res)  => {
-//   console.log(req.body.target)
-//   const agent = await Agent.update(
-//     { target: req.body.target},
-//     {
-//       where: {
-//         name: req.body.name,
-//       }
-//     }
-//   )
-
-  
-//   res.json(agent)
-// });
 
 
 app.listen(port, () => {
