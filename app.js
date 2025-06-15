@@ -8,7 +8,11 @@ const session = require('express-session');
 const sequelize = require("./sequelizeConfig")
 const { Op } = require('sequelize');
 const Agent = require("./agent.model")
-sequelize.sync();
+
+//SYNC DATABASE
+sequelize.sync().then(() =>{
+  console.log('Database is connected');
+});
 
 app.set('view engine','ejs');
 app.use(bp.urlencoded({ extended: false }));
@@ -16,13 +20,18 @@ app.use(bp.json());
 
 app.use(
   session({
-    secret: 'aUniqueKeyLol', // Replace with a unique key
-    resave: false,           // Avoid resaving unchanged sessions
-    saveUninitialized: false, // Only save sessions with initialized data
-    cookie: {},
+    secret: process.env.KEY || 'aUniqueKeyLol',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'strict',
+    },
   })
 );
 
+//AUTH MIDDLEWARE
 function auth (req, res, next){
   if(req.session.agent){
     console.log(req.session.agent + ' passed authentication.')
@@ -32,7 +41,16 @@ function auth (req, res, next){
   }
 }
 
-app.get('/admin', (req, res) => {
+function adminAuth (req, res, next){
+  if(req.session.agent === 'Mason'){
+    console.log('User has been authorized as admin.')
+    next()
+  } else {
+    res.render('message', { message: "Nice try. You got close huh."})
+  }
+}
+
+app.get('/admin', adminAuth, (req, res) => {
   res.render('adminPage');
 })
 
@@ -44,14 +62,11 @@ app.get('/login', (req, res) => {
 // REDIRECT TO AGENT PAGE VIA PIN
 app.post('/login', async (req, res) => {
   try{
-    const pin = req.body;
-    const agent = await Agent.findOne({ where: pin});
+    const pin = req.body.agentpin;
+    const agent = await Agent.findOne({ where: { agentpin: pin}});
     
     if(!agent){
-      return res.status(404).json({
-        error: 'User not found',
-        message: 'No agent found with matching pin.'
-      })
+      return res.render('message', { message: "Invalid pin.."})
     } else {
         req.session.agent = agent.name
         req.session.agentID = agent.id
@@ -81,20 +96,17 @@ app.get('/agent/:id', auth, async (req, res) => {
 
 
     if(agent.isdead) {
-      return res.status(404).json({
-        error: 'Failed to log in',
-        message: 'This agent has been eliminated'
-      })
+      return res.render('message', { message: "Better luck next time.."})
     }
 
     if(agent.won){
-        res.render('win')
+        res.render('message', { message: "We'll be in touch.."})
     } else {
         res.render('agentPage', {img: agent.img, target: agent.target, pin: agent.agentpin, name: agent.name })
     }
 
   } catch (err){
-    console.error('', err)
+    console.error('Error in /agent/:id ', err)
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to find agent via UUID'
@@ -104,13 +116,13 @@ app.get('/agent/:id', auth, async (req, res) => {
 
 
 //GET AGENTS LIST
-app.get('/api/agent/', auth, async (req, res) => {
+app.get('/api/agent/', adminAuth, async (req, res) => {
   try {
     const agents = await Agent.findAll();
     res.json(agents)
 
   } catch (err){
-    console.error('', err)
+    console.error('Error in /api/agent/', err)
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to list all Agents'
@@ -120,13 +132,13 @@ app.get('/api/agent/', auth, async (req, res) => {
 
 
 //CREATE AGENT 
-app.post('/api/agent/', async (req, res) => {
+app.post('/api/agent/', adminAuth, async (req, res) => {
   try{
     const agent = await Agent.create(req.body);
     res.json(agent);
 
   } catch (err){
-    console.error('', err)
+    console.error('Error in /api/agent/', err)
     res.status(500).json({
       error: 'Internal server error',
       message: 'Failed to create new agent'
@@ -176,10 +188,7 @@ app.post('/api/kill/:target', auth, async (req, res) => {
       console.log(req.session.agent + ' has eliminated ' + agentKilled.name)
 
     } else {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'You are not authorized to kill this Agent'
-      })
+      return res.render('message', { message: "This isn't your target.."})
     }
 
     //CHECK IF THERE ARE ANY PLAYERS LEFT
@@ -187,7 +196,7 @@ app.post('/api/kill/:target', auth, async (req, res) => {
       agent.won = true;
       await agent.save();
       console.log(req.session.agent + ' has won the game. Now let us see if they are worthy..')
-      res.render('win');
+      res.render('message', { message: "We'll be in touch.."});
     } else{
       console.log(req.session.agent + ' is given a new target.')
       agent.target = newTarget[0].name;
@@ -195,7 +204,7 @@ app.post('/api/kill/:target', auth, async (req, res) => {
       res.redirect(`/agent/${agent.id.toString()}`)
     }
   } catch (err) {
-    console.error('', err)
+    console.error('Error in /api/kill/:target', err)
     res.status(500).json({
       error: 'Internal service error',
       message: 'Failed to kill agent'
