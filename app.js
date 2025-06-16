@@ -105,6 +105,8 @@ app.get('/agent/:id', auth, async (req, res) => {
         res.render('agentPage', {img: agent.img, target: agent.target, pin: agent.agentpin, name: agent.name })
     }
 
+    console.log(req.session.agent + ' has logged into their dashboard.')
+
   } catch (err){
     console.error('Error in /agent/:id ', err)
     res.status(500).json({
@@ -197,7 +199,7 @@ app.post('/api/kill/:target', auth, async (req, res) => {
       await agent.save();
       console.log(req.session.agent + ' has won the game. Now let us see if they are worthy..')
       res.render('message', { message: "We'll be in touch.."});
-    } else{
+    }else{
       console.log(req.session.agent + ' is given a new target.')
       agent.target = newTarget[0].name;
       await agent.save();
