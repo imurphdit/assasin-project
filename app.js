@@ -26,6 +26,8 @@ sequelize.sync({ force: process.env.NODE_ENV !== 'production' }).then(() =>{
   console.log(admin)
 });
 
+app.enable('trust proxy')
+
 app.set('view engine','ejs');
 app.use(bp.urlencoded({ extended: false }));
 app.use(bp.json());
@@ -43,8 +45,6 @@ app.use(
   })
 );
 
-app.enable('trust proxy')
-
 //AUTH MIDDLEWARE
 function auth (req, res, next){
   if(req.session.agent){
@@ -56,7 +56,7 @@ function auth (req, res, next){
 }
 
 function adminAuth (req, res, next){
-  if(req.session.agent === process.env.ADMIN_NAME || 'Admin'){
+  if(req.session.agent === (process.env.ADMIN_NAME || 'Admin')){
     console.log('User has been authorized as admin.')
     next()
   } else {
