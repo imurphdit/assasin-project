@@ -9,6 +9,14 @@ const sequelize = require("./sequelizeConfig")
 const { Op } = require('sequelize');
 const Agent = require("./agent.model")
 
+const originalConsoleLog = console.log;
+
+// Copied this from web :( adds timestamps to all console logs.
+console.log = function(...args) {
+  const timestamp = new Date().toLocaleString();
+  originalConsoleLog.apply(console, [`[${timestamp}]`, ...args]);
+};
+
 //SYNC DATABASE
 sequelize.sync().then(() =>{
   console.log('Database is connected');
