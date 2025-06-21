@@ -63,10 +63,10 @@ app.get('/login', (req, res) => {
 app.post('/login', async (req, res) => {
   try{
     const pin = req.body.agentpin.replace('#', '')
-    console.log(pin)
     const agent = await Agent.findOne({ where: { agentpin: pin}});
     
     if(!agent){
+      console.log('Someone entered an invalid pin.')
       return res.render('message', { message: "Invalid pin.."})
     } else {
         req.session.agent = agent.name
