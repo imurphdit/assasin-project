@@ -43,6 +43,8 @@ app.use(
   })
 );
 
+app.enable('trust proxy')
+
 //AUTH MIDDLEWARE
 function auth (req, res, next){
   if(req.session.agent){
