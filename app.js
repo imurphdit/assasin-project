@@ -62,7 +62,8 @@ app.get('/login', (req, res) => {
 // REDIRECT TO AGENT PAGE VIA PIN
 app.post('/login', async (req, res) => {
   try{
-    const pin = req.body.agentpin;
+    const pin = req.body.agentpin.replace('#', '')
+    console.log(pin)
     const agent = await Agent.findOne({ where: { agentpin: pin}});
     
     if(!agent){
