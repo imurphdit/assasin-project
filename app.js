@@ -9,6 +9,8 @@ const sequelize = require("./sequelizeConfig")
 const { Op } = require('sequelize');
 const Agent = require("./agent.model")
 
+const noImg = 'https://upload.wikimedia.org/wikipedia/en/6/67/This_Man_original_drawing.jpg'
+
 const originalConsoleLog = console.log;
 
 // Copied this from web :( adds timestamps to all console logs.
@@ -18,8 +20,10 @@ console.log = function(...args) {
 };
 
 //SYNC DATABASE
-sequelize.sync().then(() =>{
+sequelize.sync({ force: process.env.NODE_ENV !== 'production' }).then(() =>{
   console.log('Database is connected');
+  const admin = Agent.create({ agentpin: process.env.ADMIN_PIN || 1111, name: process.env.ADMIN_NAME || 'Admin', target: process.env.ADMIN_TARGET || 'Him', img: process.env.ADMIN_IMG || noImg})
+  console.log(admin)
 });
 
 app.set('view engine','ejs');
@@ -50,7 +54,7 @@ function auth (req, res, next){
 }
 
 function adminAuth (req, res, next){
-  if(req.session.agent === 'Mason'){
+  if(req.session.agent === process.env.ADMIN_NAME || 'Admin'){
     console.log('User has been authorized as admin.')
     next()
   } else {
@@ -95,6 +99,7 @@ app.post('/login', async (req, res) => {
 app.get('/agent/:id', auth, async (req, res) => {
   try{
     const agent = await Agent.findByPk(req.params.id)
+    const target = await Agent.findOne({ where: { name: agent.target }})
 
     if(!agent){
       return res.status(404).json({
@@ -111,7 +116,11 @@ app.get('/agent/:id', auth, async (req, res) => {
     if(agent.won){
         res.render('message', { message: "We'll be in touch.."})
     } else {
-        res.render('agentPage', {img: agent.img, target: agent.target, pin: agent.agentpin, name: agent.name })
+        if(target == null){
+          res.render('agentPage', {img: noImg, target: agent.target, pin: agent.agentpin, name: agent.name })
+        } else {
+          res.render('agentPage', {img: target.img, target: agent.target, pin: agent.agentpin, name: agent.name })
+        }
     }
 
     console.log(req.session.agent + ' has logged into their dashboard.')
