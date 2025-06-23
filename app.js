@@ -23,7 +23,6 @@ console.log = function(...args) {
 sequelize.sync({ force: process.env.NODE_ENV !== 'production' }).then(() =>{
   console.log('Database is connected');
   const admin = Agent.create({ agentpin: process.env.ADMIN_PIN || 1111, name: process.env.ADMIN_NAME || 'Admin', target: process.env.ADMIN_TARGET || 'Him', img: process.env.ADMIN_IMG || noImg})
-  console.log(admin)
 });
 
 app.enable('trust proxy')
