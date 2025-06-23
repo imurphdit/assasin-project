@@ -73,3 +73,7 @@ I learned about EJS, session mangement, express middleware(auth), error handling
 
 - Install tailwind for real 
 
+- Figure out proper way to handle update & delete on admin page
+
+- Fix admin account creating ever restart in prod
+
