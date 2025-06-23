@@ -167,6 +167,46 @@ app.post('/api/agent/', adminAuth, async (req, res) => {
   }
 });
 
+// DELETE AGENT
+app.delete('/api/agent/:id', async (req, res) => {
+  try {
+    const agent = await Agent.destroy({
+      where: {
+        id: req.params.id
+      }
+    })
+    res.json(agent)
+
+  } catch (err) {
+    console.error('Error in /api/agent/:id DELETE', err)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to delete agent'
+    })
+  }
+})
+
+// UPDATE AGENT
+app.put('/api/agent/:id', async (req, res) => {
+  try {
+    const agent = Agent.update(
+      req.body, {
+        where: {
+          id: req.params.id
+        }
+      }
+    )
+    res.json(agent)
+
+  } catch (err) {
+    console.error('Error in /api/agent/:id UPDATE', err)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to update agent'
+    })
+  }
+})
+
 
 //KILL AGENT
 app.post('/api/kill/:target', auth, async (req, res) => {
