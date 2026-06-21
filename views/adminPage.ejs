@@ -9,13 +9,23 @@
     // TAKE ALL AGENTS AND MAKE TABLE VIEW WITH ACTIVATION STATUS AND START BUTTON
         <h1>Agents</h1>
             <ol><% agents.forEach((agent) =>{ %>
-              <li><b><%= agent.isactivated %></b> <%= agent.name %> <b>PIN </b><%= agent.agentpin %> <b>Target </b><%= agent.target %> <b>IsDead? </b><%= agent.isdead %> <b>KilledBy </b><%= agent.killedby %> <b>Won? </b><%= agent.won %> <b>Admin? </b><%= agent.isadmin %>
-                  <form action="/api/agent/<%= agent.id %>/delete" method="get"><button type="submit" value="delete">DELETE</button></form></li>
+              <li><b><%= agent.isactivated %></b> <%= agent.name %> <b>PIN </b><%= agent.agentpin %> <b>Target </b><%= agent.target %> <b>IsDead? </b><%= agent.isdead %> <b>KilledBy </b><%= agent.killedby %> <b>Won? </b><%= agent.won %> <b>Admin? </b><%= agent.isadmin %> <b>ID </b><%= agent.id %>
+                  <form action="/api/agent/<%= agent.id %>/delete" method="get"><button type="submit" value="delete">DELETE</button></form>
+                  <form action="/api/agent/<%= agent.id %>/reassign" method="get"><button type="submit" value="delete">REASSIGN</button></form>
+              </li>
             <% });%></ol>
         <h1>Create Agent</h1>
         <form action="/api/agent" method="post">
             <p>AGENT PIN</p><input type="text" id="pin" name="agentpin">
             <p>AGENT NAME</p><input type="text" id="name" name="name">
             <input type="submit" value="submit">
+        </form>
+        <h1>Start Game</h1>
+        <form action="/api/game/start" method="get">
+            <button type="submit" value="start">START</button>
+        </form>
+        <h1>Reset Game</h1>
+        <form action="/api/game/reset" method="get">
+            <button type="submit" value="reset">RESET</button>
         </form>
 </html>

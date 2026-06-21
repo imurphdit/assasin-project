@@ -3,11 +3,11 @@
 
 I wanted to get my friends all together and involved this summer so I made a sort of spin on the age old senior assassin game.
 
-"Agents" are made with the admin panel. Each Agent needs a PIN and a target to start out. After logging in and killing their Target, it generates a new target until there is no one left, in which case they win.
+"Agents" are made with the admin panel. Each Agent needs a PIN to start out. In order to join the game, agents must log in with their PIN, which activates their account. The admin can start the game from the panel, and it will assign everyone a target. After logging in and killing their Target, it generates a new target until there is no one left, in which case they win.
 
 ## Tech Stack
 
-**Client:** HTML & JS 
+**Client:** HTML, CSS & JS 
 
 **Server:** Node, Express, EJS, Sequelize & SQLite
 
@@ -56,10 +56,10 @@ Start the development server
 ```bash
   npm run dev
 ```
-Go to login page (default port is 3000)
+Go to setup page (default port is 3000)
 
 ```bash
-  http://localhost:3000/login
+  http://localhost:3000/setup
 ```
 
 ## Lessons Learned
@@ -69,10 +69,4 @@ I learned about EJS, session mangement, express middleware(auth), error handling
 
 ## Roadmap
 
-- Install tailwind for real 
-
-- Revamp admin page to show list of all user, if theyre activated, a button to add a user, and a button to start the game.
-
-- Check if login is admin, if so just redirect them to admin page instead of agent page
-
-- 
+- Install tailwind for real

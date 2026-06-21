@@ -23,7 +23,7 @@ console.log = function (...args) {
 };
 
 //SYNC DATABASE
-sequelize.sync({ force: process.env.NODE_ENV !== "production" }).then(() => {
+sequelize.sync({ force: false }).then(() => {
   console.log("Database is connected");
   checkSetup();
 });
