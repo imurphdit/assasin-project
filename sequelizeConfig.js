@@ -1,9 +1,10 @@
-const { Sequelize, Model, DataTypes } = require('sequelize')
+const { Sequelize, Model, DataTypes } = require("sequelize");
 
 const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: './database.sqlite',
-    logging: process.env.NODE_ENV !== 'production',
-  })
+  dialect: "sqlite",
+  storage: "./database.sqlite",
+  logging: false,
+  //logging: process.env.NODE_ENV !== 'production',
+});
 
-  module.exports = sequelize
+module.exports = sequelize;

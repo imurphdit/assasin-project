@@ -69,11 +69,10 @@ I learned about EJS, session mangement, express middleware(auth), error handling
 
 ## Roadmap
 
-- Change API endpoints to use UUID instead of name (breaks when people use other characters)
-
 - Install tailwind for real 
 
-- Figure out proper way to handle update & delete on admin page
+- Revamp admin page to show list of all user, if theyre activated, a button to add a user, and a button to start the game.
 
-- Fix admin account creating ever restart in prod
+- Check if login is admin, if so just redirect them to admin page instead of agent page
 
+- 
